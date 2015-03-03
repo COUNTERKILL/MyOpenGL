@@ -85,22 +85,31 @@ def RasterizationPoly(image, v1, v2, v3, color):
 			vMiddle = v2
 			vLow = v1
 			vHight = v3
-
+	# low part of poly
 	alpha = (vHight.x - vMiddle.x)/(vHight.y - vMiddle.y)
-	print("Alpha: ", vHight.x, vMiddle.x)
 	beta = (vHight.x - vLow.x)/(vHight.y - vLow.y)
-	print(alpha, beta)
-	print ("y1 - y2: ", vMiddle.y, vHight.y)
 	for dy in range(0, vHight.y - vMiddle.y):
 		x1 = int(beta * (dy + vMiddle.y - vLow.y)) + vLow.x
 		x2 = int(alpha * dy) + vMiddle.x
-		print (dy, " - X1 - X2: ", x1, x2)
 		if x1 > x2:
 			step = -1
 		else:
 			step = 1
 		for x in range(x1, x2, step):
 			image.putpixel((x, vMiddle.y + dy), color)
+	# hight part of poly
+	alpha = (vMiddle.x - vLow.x)/(vMiddle.y - vLow.y)
+	beta = (vHight.x - vLow.x)/(vHight.y - vLow.y)
+	for dy in range(0, vMiddle.y - vLow.y):
+		x1 = int(beta * dy) + vLow.x
+		x2 = int(alpha * dy) + vLow.x
+		print (dy, " - X1 - X2: ", x1, x2)
+		if x1 > x2:
+			step = -1
+		else:
+			step = 1
+		for x in range(x1, x2, step):
+			image.putpixel((x, vLow.y + dy), color)
 
 # DrawPoly
 def DrawPoly(image, v1, v2, v3, color):
