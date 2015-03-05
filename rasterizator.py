@@ -58,7 +58,6 @@ def DrawLine(image, v0, v1, color):
 #end drawLine
 
 def RasterizationPoly(image, v1, v2, v3, color):
-	print("Rasterization in progress...")
 	if v1.y > v2.y:
 		if v1.y > v3.y:
 			vHight = v1
@@ -111,7 +110,6 @@ def RasterizationPoly(image, v1, v2, v3, color):
 		for dy in range(0, vMiddle.y - vLow.y):
 			x1 = int(beta * dy) + vLow.x
 			x2 = int(alpha * dy) + vLow.x
-			print (dy, " - X1 - X2: ", x1, x2)
 			if x1 > x2:
 				step = -1
 			else:
@@ -141,7 +139,7 @@ for i in range(0, width):
 
 color = (0, 0, 255)
 v1 = Vertex(100,100,0,(0, 0, 255))
-v2 = Vertex(1000,500,0,(0, 0, 255))
+v2 = Vertex(1000,200,0,(0, 0, 255))
 #DrawLine(image, v1, v2, color)
 v3 = Vertex(500,500,0,(0, 0, 255))
 DrawPoly(image, v1, v2, v3, color)
