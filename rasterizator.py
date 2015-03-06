@@ -1,5 +1,5 @@
 from __future__ import division
-import Image, ImageDraw
+import Image, ImageDraw, math
 
 class Vertex:
 	def __init__(self, x, y, z, color):
@@ -11,13 +11,15 @@ class Vertex:
 	x = 0
 	y = 0
 	z = 0
+	texCoordU = 0
+	texCoordV = 0
 	color = (0, 0, 0)
 #end class Vertex	
 	
 	
 	
 # Brezencham algorythm
-def DrawLine(image, v0, v1, color):
+def DrawLine(image, v0, v1):
 	dx = (v1.x-v0.x)
 	dy = (v1.y-v0.y)
 	if abs(dx) > abs(dy):
@@ -27,7 +29,7 @@ def DrawLine(image, v0, v1, color):
 			else:
 				step = 1
 			for y in range(v0.y, v1.y, step):
-				image.putpixel((v0.x, y), color)
+				image.putpixel((v0.x, y), v1.color)
 		else:
 			s = dy/dx
 			if v0.x > v1.x:
@@ -36,7 +38,7 @@ def DrawLine(image, v0, v1, color):
 				step = 1
 			for x in range(v0.x, v1.x, step):
 				y = int(s * (x - v0.x) + v0.y);
-				image.putpixel((x, y), color)
+				image.putpixel((x, y), v1.color)
 	else:
 		if dy==0:
 			if v0.x > v1.x:
@@ -44,7 +46,7 @@ def DrawLine(image, v0, v1, color):
 			else:
 				step = 1
 			for x in range(v0.x, v1.x, step):
-				image.putpixel((x, v0.y), color)
+				image.putpixel((x, v0.y), v1.color)
 		else:
 			s = dx/dy
 			if v0.y > v1.y:
@@ -53,11 +55,13 @@ def DrawLine(image, v0, v1, color):
 				step = 1
 			for y in range(v0.y, v1.y, step):
 				x = int(s * (y - v0.y) + v0.x);
-				image.putpixel((x, y), color)
+				image.putpixel((x, y), v1.color)
 	return;
 #end drawLine
 
-def RasterizationPoly(image, v1, v2, v3, color):
+def RasterizationPoly(image, v1, v2, v3):
+	if hasattr(v1, "texCoordU"):
+		print "texcoord"
 	if v1.y > v2.y:
 		if v1.y > v3.y:
 			vHight = v1
@@ -102,7 +106,23 @@ def RasterizationPoly(image, v1, v2, v3, color):
 			else:
 				step = 1
 			for x in range(x1, x2, step):
-				image.putpixel((x, vMiddle.y + dy), color)
+				y = vMiddle.y + dy
+				distToV1 = math.sqrt(((x - v1.x)**2) + ((y - v1.y)**2))
+				distToV2 = math.sqrt(((x - v2.x)**2) + ((y - v2.y)**2))
+				distToV3 = math.sqrt(((x - v3.x)**2) + ((y - v3.y)**2))
+				allDist = distToV1 + distToV2 + distToV3
+				colorSet1 = [0,0,0]
+				colorSet2 = [0,0,0]
+				colorSet3 = [0,0,0]
+				colorSet = [0,0,0]
+				for i in range(0, 3): 
+					colorSet1[i] = v1.color[i] * (distToV1/allDist) # color from 1 vertex
+					colorSet2[i] = v2.color[i] * (distToV2/allDist) # color from 2 vertex
+					colorSet3[i] = v3.color[i] * (distToV3/allDist) # color from 3 vertex
+				for i in range(0, 3): 
+					colorSet[i] = colorSet1[i] + colorSet2[i] + colorSet3[i]
+				color = tuple(int(i) for i in colorSet)
+				image.putpixel((x, y), color)
 	if not breakLow:
 		# hight part of poly
 		alpha = (vMiddle.x - vLow.x)/(vMiddle.y - vLow.y)
@@ -115,14 +135,30 @@ def RasterizationPoly(image, v1, v2, v3, color):
 			else:
 				step = 1
 			for x in range(x1, x2, step):
-				image.putpixel((x, vLow.y + dy), color)
+				y = vLow.y + dy
+				distToV1 = math.sqrt(((x - v1.x)**2) + ((y - v1.y)**2))
+				distToV2 = math.sqrt(((x - v2.x)**2) + ((y - v2.y)**2))
+				distToV3 = math.sqrt(((x - v3.x)**2) + ((y - v3.y)**2))
+				allDist = distToV1 + distToV2 + distToV3
+				colorSet1 = [0,0,0]
+				colorSet2 = [0,0,0]
+				colorSet3 = [0,0,0]
+				colorSet = [0,0,0]
+				for i in range(0, 3): 
+					colorSet1[i] = v1.color[i] * (distToV1/allDist) # color from 1 vertex
+					colorSet2[i] = v2.color[i] * (distToV2/allDist) # color from 2 vertex
+					colorSet3[i] = v3.color[i] * (distToV3/allDist) # color from 3 vertex
+				for i in range(0, 3): 
+					colorSet[i] = colorSet1[i] + colorSet2[i] + colorSet3[i]
+				color = tuple(int(i) for i in colorSet)
+				image.putpixel((x, y), color)
 
 # DrawPoly
-def DrawPoly(image, v1, v2, v3, color):
+def DrawPoly(image, v1, v2, v3):
 	#DrawLine(image, v1, v2, color)
 	#DrawLine(image, v2, v3, color)
 	#DrawLine(image, v1, v3, color)
-	RasterizationPoly(image, v1, v2, v3, color)
+	RasterizationPoly(image, v1, v2, v3)
 	return;
 #end DrawPoly
 
@@ -138,11 +174,11 @@ for i in range(0, width):
  # image.putpixel((i, i), (0, 255, 0))
 
 color = (0, 0, 255)
-v1 = Vertex(100,100,0,(0, 0, 255))
-v2 = Vertex(1000,200,0,(0, 0, 255))
+v1 = Vertex(100,100,0,(255, 0, 0))
+v2 = Vertex(1000,200,0,(0, 255, 0))
 #DrawLine(image, v1, v2, color)
 v3 = Vertex(500,500,0,(0, 0, 255))
-DrawPoly(image, v1, v2, v3, color)
+DrawPoly(image, v1, v2, v3)
 #draw = ImageDraw.Draw(image)
 #draw. ellipse((10,10,300,300), fill="white", outline="red")
 #del draw
@@ -150,3 +186,5 @@ DrawPoly(image, v1, v2, v3, color)
 image.show()
 image.save("C:\img.png", "PNG")
 del image
+if hasattr(Vertex, "text"):
+	print 123
