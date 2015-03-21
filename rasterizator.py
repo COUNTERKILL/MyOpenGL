@@ -29,11 +29,12 @@ def GetPointIntersectionNormalLine(v0, v1, v2):
 	l = math.sqrt(((v0.x - v1.x) ** 2) + ((v0.y - v1.y) ** 2))
 	l1 = math.sqrt(((v0.x - v2.x) ** 2) + ((v0.y - v2.y) ** 2))
 	l3 = math.sqrt(((v1.x - v2.x) ** 2) + ((v1.y - v2.y) ** 2))
-	x1 = (l*l - l1*l1 + l3*l3) / (2 * l3) # dist from Normal intersection point to v1
+	
+	x1 = (l*l - l1*l1 + l3*l3) / (2.0 * l3) # dist from Normal intersection point to v1
 	x2 = l3 - x1 # dist from Normal intersection point to v2
-	x = (x1/(x1+x2) * v2.x + (x2/(x1+x2) * v1.x
-	y = (x1/(x1+x2) * v2.y + (x2/(x1+x2) * v1.y
-	retV = v0 # because will not defined in this file
+	x = (x1/(x1+x2)) * v2.x + (x2/(x1+x2)) * v1.x
+	y = (x1/(x1+x2)) * v2.y + (x2/(x1+x2)) * v1.y
+	retV = Vertex(0, 0, 0, (0, 0, 0)) # because will not defined in this file
 	retV.x = x
 	retV.y = y
 	return retV
@@ -82,8 +83,14 @@ def DrawLine(image, v0, v1):
 #end drawLine
 
 def RasterizationPoly(image, v1, v2, v3):
+	# texCoord is defined
 	if hasattr(v1, "texCoordU"):
-		print "texcoord"
+		
+		return
+	
+	
+	
+	# if not texture
 	if v1.y > v2.y:
 		if v1.y > v3.y:
 			vHight = v1
@@ -129,18 +136,35 @@ def RasterizationPoly(image, v1, v2, v3):
 				step = 1
 			for x in range(x1, x2, step):
 				y = vMiddle.y + dy
-				distToV1 = math.sqrt(((x - v1.x)**2) + ((y - v1.y)**2))
-				distToV2 = math.sqrt(((x - v2.x)**2) + ((y - v2.y)**2))
-				distToV3 = math.sqrt(((x - v3.x)**2) + ((y - v3.y)**2))
-				allDist = distToV1 + distToV2 + distToV3
+				
+				v0 = Vertex(0, 0, 0, (0, 0, 0))
+				v0.x = x
+				v0.y = y
+				
+				pV1toV2 = GetPointIntersectionNormalLine(v3, v1, v2)
+				pV2toV3 = GetPointIntersectionNormalLine(v1, v2, v3)
+				pV1toV3 = GetPointIntersectionNormalLine(v2, v1, v3)
+				
+				pTopV1toV2 = GetPointIntersectionNormalLine(v0, v3, pV1toV2) # point intersection perp from pixel to perp from v3 to v1-v2 line. 0_o
+				pTopV2toV3 = GetPointIntersectionNormalLine(v0, v1, pV2toV3)
+				pTopV1toV3 = GetPointIntersectionNormalLine(v0, v2, pV1toV3)
+				
+				distToV1 = math.sqrt(((pTopV2toV3.x - v1.x)**2) + ((pTopV2toV3.y - v1.y)**2))
+				distToV2 = math.sqrt(((pTopV1toV3.x - v2.x)**2) + ((pTopV1toV3.y - v2.y)**2))
+				distToV3 = math.sqrt(((pTopV1toV2.x - v3.x)**2) + ((pTopV1toV2.y - v3.y)**2))
+				
+				distV1toP = math.sqrt(((pV2toV3.x - v1.x)**2) + ((pV2toV3.y - v1.y)**2))
+				distV2toP = math.sqrt(((pV1toV3.x - v2.x)**2) + ((pV1toV3.y - v2.y)**2))
+				distV3toP = math.sqrt(((pV1toV2.x - v3.x)**2) + ((pV1toV2.y - v3.y)**2))
+				
 				colorSet1 = [0,0,0]
 				colorSet2 = [0,0,0]
 				colorSet3 = [0,0,0]
 				colorSet = [0,0,0]
 				for i in range(0, 3): 
-					colorSet1[i] = v1.color[i] * (distToV1/allDist) # color from 1 vertex
-					colorSet2[i] = v2.color[i] * (distToV2/allDist) # color from 2 vertex
-					colorSet3[i] = v3.color[i] * (distToV3/allDist) # color from 3 vertex
+					colorSet1[i] = v1.color[i] * (1.0 - distToV1/distV1toP) # color from 1 vertex
+					colorSet2[i] = v2.color[i] * (1.0 - distToV2/distV2toP) # color from 2 vertex
+					colorSet3[i] = v3.color[i] * (1.0 - distToV3/distV3toP) # color from 3 vertex
 				for i in range(0, 3): 
 					colorSet[i] = colorSet1[i] + colorSet2[i] + colorSet3[i]
 				color = tuple(int(i) for i in colorSet)
@@ -159,18 +183,34 @@ def RasterizationPoly(image, v1, v2, v3):
 				step = 1
 			for x in range(x1, x2, step):
 				y = vLow.y + dy
-				distToV1 = math.sqrt(((x - v1.x)**2) + ((y - v1.y)**2))
-				distToV2 = math.sqrt(((x - v2.x)**2) + ((y - v2.y)**2))
-				distToV3 = math.sqrt(((x - v3.x)**2) + ((y - v3.y)**2))
-				allDist = distToV1 + distToV2 + distToV3
+				v0 = Vertex(0, 0, 0, (0, 0, 0))
+				v0.x = x
+				v0.y = y
+				
+				pV1toV2 = GetPointIntersectionNormalLine(v3, v1, v2)
+				pV2toV3 = GetPointIntersectionNormalLine(v1, v2, v3)
+				pV1toV3 = GetPointIntersectionNormalLine(v2, v1, v3)
+				
+				pTopV1toV2 = GetPointIntersectionNormalLine(v0, v3, pV1toV2) # point intersection perp from pixel to perp from v3 to v1-v2 line. 0_o
+				pTopV2toV3 = GetPointIntersectionNormalLine(v0, v1, pV2toV3)
+				pTopV1toV3 = GetPointIntersectionNormalLine(v0, v2, pV1toV3)
+				
+				distToV1 = math.sqrt(((pTopV2toV3.x - v1.x)**2) + ((pTopV2toV3.y - v1.y)**2))
+				distToV2 = math.sqrt(((pTopV1toV3.x - v2.x)**2) + ((pTopV1toV3.y - v2.y)**2))
+				distToV3 = math.sqrt(((pTopV1toV2.x - v3.x)**2) + ((pTopV1toV2.y - v3.y)**2))
+				
+				distV1toP = math.sqrt(((pV2toV3.x - v1.x)**2) + ((pV2toV3.y - v1.y)**2))
+				distV2toP = math.sqrt(((pV1toV3.x - v2.x)**2) + ((pV1toV3.y - v2.y)**2))
+				distV3toP = math.sqrt(((pV1toV2.x - v3.x)**2) + ((pV1toV2.y - v3.y)**2))
+				
 				colorSet1 = [0,0,0]
 				colorSet2 = [0,0,0]
 				colorSet3 = [0,0,0]
 				colorSet = [0,0,0]
 				for i in range(0, 3): 
-					colorSet1[i] = v1.color[i] * (distToV1/allDist) # color from 1 vertex
-					colorSet2[i] = v2.color[i] * (distToV2/allDist) # color from 2 vertex
-					colorSet3[i] = v3.color[i] * (distToV3/allDist) # color from 3 vertex
+					colorSet1[i] = v1.color[i] * (1.0 - distToV1/distV1toP) # color from 1 vertex
+					colorSet2[i] = v2.color[i] * (1.0 - distToV2/distV2toP) # color from 2 vertex
+					colorSet3[i] = v3.color[i] * (1.0 - distToV3/distV3toP) # color from 3 vertex
 				for i in range(0, 3): 
 					colorSet[i] = colorSet1[i] + colorSet2[i] + colorSet3[i]
 				color = tuple(int(i) for i in colorSet)
