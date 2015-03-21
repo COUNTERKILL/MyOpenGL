@@ -1,5 +1,11 @@
 from __future__ import division
 import Image, ImageDraw, math
+import numpy as np
+
+SCREEN = np.zeros((1024, 1024, 3), dtype=int)
+ZBUFFER = np.zeros((1024, 1024, 3), dtype=float)
+# fill image gray color
+SCREEN.fill(80)
 
 class Vertex:
 	def __init__(self, x, y, z, color):
@@ -16,6 +22,21 @@ class Vertex:
 	color = (0, 0, 0)
 #end class Vertex	
 	
+# get point intersection normal from point to line with this line
+# v0 - point
+# v1, v2 - point of line
+def GetPointIntersectionNormalLine(v0, v1, v2):
+	l = math.sqrt(((v0.x - v1.x) ** 2) + ((v0.y - v1.y) ** 2))
+	l1 = math.sqrt(((v0.x - v2.x) ** 2) + ((v0.y - v2.y) ** 2))
+	l3 = math.sqrt(((v1.x - v2.x) ** 2) + ((v1.y - v2.y) ** 2))
+	x1 = (l*l - l1*l1 + l3*l3) / (2 * l3) # dist from Normal intersection point to v1
+	x2 = l3 - x1 # dist from Normal intersection point to v2
+	x = (x1/(x1+x2) * v2.x + (x2/(x1+x2) * v1.x
+	y = (x1/(x1+x2) * v2.y + (x2/(x1+x2) * v1.y
+	retV = v0 # because will not defined in this file
+	retV.x = x
+	retV.y = y
+	return retV
 	
 	
 # Brezencham algorythm
@@ -29,7 +50,7 @@ def DrawLine(image, v0, v1):
 			else:
 				step = 1
 			for y in range(v0.y, v1.y, step):
-				image.putpixel((v0.x, y), v1.color)
+				SCREEN[x, y] = v1.color
 		else:
 			s = dy/dx
 			if v0.x > v1.x:
@@ -38,7 +59,7 @@ def DrawLine(image, v0, v1):
 				step = 1
 			for x in range(v0.x, v1.x, step):
 				y = int(s * (x - v0.x) + v0.y);
-				image.putpixel((x, y), v1.color)
+				SCREEN[x, y] = v1.color
 	else:
 		if dy==0:
 			if v0.x > v1.x:
@@ -46,7 +67,8 @@ def DrawLine(image, v0, v1):
 			else:
 				step = 1
 			for x in range(v0.x, v1.x, step):
-				image.putpixel((x, v0.y), v1.color)
+				SCREEN[x, y] = v1.color
+
 		else:
 			s = dx/dy
 			if v0.y > v1.y:
@@ -55,7 +77,7 @@ def DrawLine(image, v0, v1):
 				step = 1
 			for y in range(v0.y, v1.y, step):
 				x = int(s * (y - v0.y) + v0.x);
-				image.putpixel((x, y), v1.color)
+				SCREEN[x, y] = v1.color
 	return;
 #end drawLine
 
@@ -122,7 +144,8 @@ def RasterizationPoly(image, v1, v2, v3):
 				for i in range(0, 3): 
 					colorSet[i] = colorSet1[i] + colorSet2[i] + colorSet3[i]
 				color = tuple(int(i) for i in colorSet)
-				image.putpixel((x, y), color)
+				SCREEN[x, y] = color
+				
 	if not breakLow:
 		# hight part of poly
 		alpha = (vMiddle.x - vLow.x)/(vMiddle.y - vLow.y)
@@ -151,7 +174,8 @@ def RasterizationPoly(image, v1, v2, v3):
 				for i in range(0, 3): 
 					colorSet[i] = colorSet1[i] + colorSet2[i] + colorSet3[i]
 				color = tuple(int(i) for i in colorSet)
-				image.putpixel((x, y), color)
+				SCREEN[x, y] = color
+				
 
 # DrawPoly
 def DrawPoly(image, v1, v2, v3):
@@ -166,10 +190,7 @@ def DrawPoly(image, v1, v2, v3):
 image = Image.new("RGBA", (1024,1024), (0,0,0,0))
 
 (width, height) = image.size
-# fill image gray color
-for i in range(0, width):
-	for j in range(0, height):
-		image.putpixel((i, j), (100, 100, 100))
+
 #for i in range(0, width):
  # image.putpixel((i, i), (0, 255, 0))
 
@@ -183,8 +204,12 @@ DrawPoly(image, v1, v2, v3)
 #draw. ellipse((10,10,300,300), fill="white", outline="red")
 #del draw
 #image.save("test.png", "PNG")
+
+if hasattr(Vertex, "text"):
+	print 123
+for row in range(0, SCREEN.shape[0]):
+	for col in range(0, SCREEN.shape[1]):
+		image.putpixel((row, col), tuple(SCREEN[row, col]))
 image.show()
 image.save("C:\img.png", "PNG")
 del image
-if hasattr(Vertex, "text"):
-	print 123
