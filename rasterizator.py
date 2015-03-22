@@ -267,10 +267,10 @@ def DrawPoly(image, v1, v2, v3):
 #end DrawPoly
 
 
-image = Image.new("RGBA", (1024,1024), (0,0,0,0))
-TEXTURE = Image.open("texture.jpg")
+#image = Image.new("RGBA", (1024,1024), (0,0,0,0))
+#TEXTURE = Image.open("texture.jpg")
 
-(width, height) = image.size
+TEXTURE = Image.open("texture.jpg")
 
 #for i in range(0, width):
  # image.putpixel((i, i), (0, 255, 0))
@@ -280,7 +280,7 @@ v1 = Vertex(10,10,0, 0, 0)
 v2 = Vertex(1000,200,0, 0.9766, 0.1953)
 #DrawLine(image, v1, v2, color)
 v3 = Vertex(500,1000,0, 0.4882, 0.9766)
-DrawPoly(image, v1, v2, v3)
+#DrawPoly(image, v1, v2, v3)
 #draw = ImageDraw.Draw(image)
 #draw. ellipse((10,10,300,300), fill="white", outline="red")
 #del draw
@@ -288,9 +288,9 @@ DrawPoly(image, v1, v2, v3)
 
 if hasattr(Vertex, "text"):
 	print 123
-for x in range(0, SCREEN.shape[0]):
-	for y in range(0, SCREEN.shape[1]):
-		image.putpixel((x, y), tuple(SCREEN[x, y]))
-image.show()
-image.save("C:\img.png", "PNG")
-del image
+#for x in range(0, SCREEN.shape[0]):
+#	for y in range(0, SCREEN.shape[1]):
+#		image.putpixel((x, y), tuple(SCREEN[x, y]))
+#image.show()
+#image.save("C:\img.png", "PNG")
+#del image

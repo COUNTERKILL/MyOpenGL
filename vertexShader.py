@@ -47,8 +47,8 @@ def SetLookAtLH(vPos, vAt, vUp):
 	# get right local vector
 	vRight = np.cross(vUp, vLook)
 	vRight = Normilize(vRight)
-	print("vRight: ")
-	print(vRight)
+	#print("vRight: ")
+	#print(vRight)
 	vUp = np.cross(vLook, vRight)
 	global MATRIX_VIEW
 	
@@ -61,8 +61,8 @@ def SetLookAtLH(vPos, vAt, vUp):
 		
 	dotProduct = np.dot(vRight, vPos)
 	MATRIX_VIEW[3][0] = -1.0 * dotProduct
-	print("dotProduct: ")
-	print(dotProduct)
+	#print("dotProduct: ")
+	#print(dotProduct)
 	dotProduct = np.dot(vUp, vPos)
 	MATRIX_VIEW[3][1] = -1.0 * dotProduct
 	
@@ -71,19 +71,19 @@ def SetLookAtLH(vPos, vAt, vUp):
 	
 
 SetLookAtLH(np.array([0, 2, -5], dtype=float), np.array([0, 0, 2], dtype=float), np.array([0, 1, 0], dtype=float))
-print("Matrix projection: ")
+#print("Matrix projection: ")
 
 SetPerspectiveFovLH(math.pi/4, 1.0, 2.0, 10.0)
-print(MATRIX_PROJECTION)
+#print(MATRIX_PROJECTION)
 
-print("Matrix view: ")
-print(MATRIX_VIEW)
+#print("Matrix view: ")
+#print(MATRIX_VIEW)
 
-print("Vector in view: ")
+#print("Vector in view: ")
 vecInView = np.dot(np.array([-1, -2, 5, 1], dtype=float), MATRIX_VIEW)
-print(vecInView)
+#print(vecInView)
 
-print("Vector in projection: ")
+#print("Vector in projection: ")
 
-print(NormilizeFromW(np.dot(vecInView, MATRIX_PROJECTION)))
+#print(NormilizeFromW(np.dot(vecInView, MATRIX_PROJECTION)))
 
